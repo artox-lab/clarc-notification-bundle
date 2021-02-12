@@ -1,0 +1,19 @@
+services:
+  _defaults:
+    autowire: true
+    autoconfigure: true
+
+  artox_lab_clarc_notification.presenter_provider:
+    class: ArtoxLab\Bundle\ClarcNotificationBundle\Notification\Interfaces\Presenter\PresenterProvider
+
+  ArtoxLab\Bundle\ClarcNotificationBundle\Notification\Interfaces\Presenter\PresenterProviderInterface: '@artox_lab_clarc_notification.presenter_provider'
+
+  artox_lab_clarc_notification.transport_provider:
+    class: ArtoxLab\Bundle\ClarcNotificationBundle\Notification\Interfaces\Transport\TransportProvider
+
+  ArtoxLab\Bundle\ClarcNotificationBundle\Notification\Interfaces\Transport\TransportProviderInterface: '@artox_lab_clarc_notification.transport_provider'
+
+  artox_lab_clarc_notification.notifier:
+    class:  ArtoxLab\Bundle\ClarcNotificationBundle\Notification\Interfaces\Notifier\Notifier
+
+  ArtoxLab\Bundle\ClarcNotificationBundle\Notification\Entities\Notifier\NotifierInterface: '@artox_lab_clarc_notification.notifier'

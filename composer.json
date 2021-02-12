@@ -1,0 +1,33 @@
+{
+    "name": "artox-lab/clarc-notification-bundle",
+    "description": "Notification adapter for Artox Lab CLARC bundle",
+    "type": "symfony-bundle",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Dmitry Meliukh",
+            "email": "d.meliukh@artox.com"
+        }
+    ],
+    "require": {
+        "php": ">=7.3",
+        "symfony/framework-bundle": "^5.0"
+    },
+    "require-dev": {
+        "roave/security-advisories": "dev-master"
+    },
+    "autoload": {
+        "psr-4": {
+            "ArtoxLab\\Bundle\\ClarcNotificationBundle\\": ""
+        },
+        "exclude-from-classmap": [
+            "/Tests/"
+        ]
+    },
+    "extra": {
+        "symfony": {
+            "allow-contrib": false,
+            "require": "5.0.*"
+        }
+    }
+}
