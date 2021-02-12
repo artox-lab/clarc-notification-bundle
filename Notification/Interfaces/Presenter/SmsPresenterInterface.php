@@ -3,6 +3,8 @@
 /**
  * Interface: sms presenter
  *
+ * Prepare data for sending via sms channel
+ *
  * @author Dmitry Meliukh <d.meliukh@artox.com>
  */
 

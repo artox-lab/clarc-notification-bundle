@@ -3,6 +3,8 @@
 /**
  * Interface: e-mail presenter
  *
+ * Prepare data for sending via e-mail channel
+ *
  * @author Dmitry Meliukh <d.meliukh@artox.com>
  */
 
@@ -23,5 +25,14 @@ interface EmailPresenterInterface extends PresenterInterface
      * @return mixed
      */
     public function getSubject(NotificationInterface $notification): string;
+
+    /**
+     * Html message
+     *
+     * @param NotificationInterface $notification Notification
+     *
+     * @return string
+     */
+    public function getHtmlContent(NotificationInterface $notification): string;
 
 }

@@ -12,11 +12,11 @@ namespace ArtoxLab\Bundle\ClarcNotificationBundle\Notification\Interfaces\Except
 
 use RuntimeException;
 
-class RecipientIsNotSpecified extends RuntimeException
+class RecipientIsNotSpecifiedException extends RuntimeException
 {
 
     /**
-     * RecipientIsNotSpecified constructor.
+     * RecipientIsNotSpecifiedException constructor.
      *
      * @param string $className Class name of recipient
      */

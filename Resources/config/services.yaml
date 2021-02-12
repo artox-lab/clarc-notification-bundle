@@ -14,6 +14,6 @@ services:
   ArtoxLab\Bundle\ClarcNotificationBundle\Notification\Interfaces\Transport\TransportProviderInterface: '@artox_lab_clarc_notification.transport_provider'
 
   artox_lab_clarc_notification.notifier:
-    class:  ArtoxLab\Bundle\ClarcNotificationBundle\Notification\Interfaces\Notifier\Notifier
+    class: ArtoxLab\Bundle\ClarcNotificationBundle\Notification\Interfaces\Notifier\Notifier
 
   ArtoxLab\Bundle\ClarcNotificationBundle\Notification\Entities\Notifier\NotifierInterface: '@artox_lab_clarc_notification.notifier'

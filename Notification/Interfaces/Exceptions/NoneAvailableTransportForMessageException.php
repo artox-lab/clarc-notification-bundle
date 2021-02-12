@@ -12,11 +12,11 @@ namespace ArtoxLab\Bundle\ClarcNotificationBundle\Notification\Interfaces\Except
 
 use LogicException;
 
-class NoneAvailableTransportForMessage extends LogicException
+class NoneAvailableTransportForMessageException extends LogicException
 {
 
     /**
-     * NoneAvailableTransportForMessage constructor.
+     * NoneAvailableTransportForMessageException constructor.
      *
      * @param string $messageClassName Name of message class
      */

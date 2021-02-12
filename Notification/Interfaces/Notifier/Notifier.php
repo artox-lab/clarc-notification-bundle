@@ -4,6 +4,8 @@
  * Notifier
  *
  * @author Dmitry Meliukh <d.meliukh@artox.com>
+ *
+ * phpcs:disable Generic.Files.LineLength.MaxExceeded
  */
 
 declare(strict_types=1);
@@ -12,16 +14,15 @@ namespace ArtoxLab\Bundle\ClarcNotificationBundle\Notification\Interfaces\Notifi
 
 use ArtoxLab\Bundle\ClarcNotificationBundle\Notification\Entities\Notification\NotificationInterface;
 use ArtoxLab\Bundle\ClarcNotificationBundle\Notification\Entities\Notifier\NotifierInterface;
-use ArtoxLab\Bundle\ClarcNotificationBundle\Notification\Entities\Recipient\EmailRecipient;
+use ArtoxLab\Bundle\ClarcNotificationBundle\Notification\Entities\Recipient\EmailRecipientInterface;
 use ArtoxLab\Bundle\ClarcNotificationBundle\Notification\Entities\Recipient\RecipientInterface;
-use ArtoxLab\Bundle\ClarcNotificationBundle\Notification\Entities\Recipient\SmsRecipient;
-use ArtoxLab\Bundle\ClarcNotificationBundle\Notification\Interfaces\Exceptions\NoneAvailableTransportForMessage;
+use ArtoxLab\Bundle\ClarcNotificationBundle\Notification\Entities\Recipient\SmsRecipientInterface;
+use ArtoxLab\Bundle\ClarcNotificationBundle\Notification\Interfaces\Exceptions\NoneAvailableTransportForMessageException;
 use ArtoxLab\Bundle\ClarcNotificationBundle\Notification\Interfaces\Exceptions\PresenterNotFoundException;
-use ArtoxLab\Bundle\ClarcNotificationBundle\Notification\Interfaces\Exceptions\RecipientIsNotSpecified;
+use ArtoxLab\Bundle\ClarcNotificationBundle\Notification\Interfaces\Exceptions\RecipientIsNotSpecifiedException;
 use ArtoxLab\Bundle\ClarcNotificationBundle\Notification\Interfaces\Message\EmailMessage;
 use ArtoxLab\Bundle\ClarcNotificationBundle\Notification\Interfaces\Message\SmsMessage;
 use ArtoxLab\Bundle\ClarcNotificationBundle\Notification\Interfaces\Presenter\EmailPresenterInterface;
-use ArtoxLab\Bundle\ClarcNotificationBundle\Notification\Interfaces\Presenter\PresenterInterface;
 use ArtoxLab\Bundle\ClarcNotificationBundle\Notification\Interfaces\Presenter\PresenterProviderInterface;
 use ArtoxLab\Bundle\ClarcNotificationBundle\Notification\Interfaces\Presenter\SmsPresenterInterface;
 use ArtoxLab\Bundle\ClarcNotificationBundle\Notification\Interfaces\Transport\TransportProviderInterface;
@@ -74,37 +75,37 @@ class Notifier implements NotifierInterface
         }
 
         if (false === $recipients) {
-            throw new RecipientIsNotSpecified(RecipientInterface::class);
+            throw new RecipientIsNotSpecifiedException(RecipientInterface::class);
         }
 
-        if ($presenter instanceof SmsPresenterInterface
-            && false === empty($phoneRecipients = $this->getPhoneRecipients(...$recipients))
-        ) {
-            $this->notifyViaSms($presenter, $notification, $phoneRecipients);
+        if ($presenter instanceof SmsPresenterInterface) {
+            $this->notifyViaSms($notification, $presenter, ...$recipients);
         }
 
-        if ($presenter instanceof EmailPresenterInterface
-            && false === empty($emailRecipients = $this->getEmailRecipients(...$recipients))
-        ) {
-            $this->notifyViaEmail($presenter, $notification, $emailRecipients);
+        if ($presenter instanceof EmailPresenterInterface) {
+            $this->notifyViaEmail($notification, $presenter, ...$recipients);
         }
     }
 
     /**
      * Send notification via sms
      *
-     * @param PresenterInterface    $presenter    Presenter of notification
-     * @param NotificationInterface $notification Notification
-     * @param array                 $recipients   Recipients
+     * @param NotificationInterface $notification  Notification
+     * @param SmsPresenterInterface $presenter     Presenter of notification
+     * @param RecipientInterface    ...$recipients Recipients
      *
      * @return void
      */
     private function notifyViaSms(
-        PresenterInterface $presenter,
         NotificationInterface $notification,
-        array $recipients
+        SmsPresenterInterface $presenter,
+        RecipientInterface ...$recipients
     ): void {
         foreach ($recipients as $recipient) {
+            if (false === ($recipient instanceof SmsRecipientInterface)) {
+                continue;
+            }
+
             $message = new SmsMessage(
                 $recipient->getPhone(),
                 $presenter->getContent($notification)
@@ -113,7 +114,7 @@ class Notifier implements NotifierInterface
             $transport = $this->transportProvider->getTransport($message);
 
             if (null === $transport) {
-                throw new NoneAvailableTransportForMessage(SmsMessage::class);
+                throw new NoneAvailableTransportForMessageException(SmsMessage::class);
             }
 
             $transport->send($message);
@@ -123,76 +124,36 @@ class Notifier implements NotifierInterface
     /**
      * Send notification via e-mail
      *
-     * @param PresenterInterface    $presenter    Presenter of notification
-     * @param NotificationInterface $notification Notification
-     * @param array                 $recipients   Recipients
+     * @param NotificationInterface   $notification  Notification
+     * @param EmailPresenterInterface $presenter     Presenter of notification
+     * @param RecipientInterface      ...$recipients Recipients
      *
      * @return void
      */
     private function notifyViaEmail(
-        PresenterInterface $presenter,
         NotificationInterface $notification,
-        array $recipients
+        EmailPresenterInterface $presenter,
+        RecipientInterface ...$recipients
     ): void {
         foreach ($recipients as $recipient) {
+            if (false === ($recipient instanceof EmailRecipientInterface)) {
+                continue;
+            }
+
             $message = new EmailMessage(
                 $recipient->getEmail(),
                 $presenter->getSubject($notification),
-                $presenter->getContent($notification)
+                $presenter->getHtmlContent($notification)
             );
 
             $transport = $this->transportProvider->getTransport($message);
 
             if (null === $transport) {
-                throw new NoneAvailableTransportForMessage(EmailMessage::class);
+                throw new NoneAvailableTransportForMessageException(EmailMessage::class);
             }
 
             $transport->send($message);
         }
-    }
-
-    /**
-     * Recipients of notification by phone number
-     *
-     * @param RecipientInterface ...$recipients Recipients
-     *
-     * @return array
-     */
-    private function getPhoneRecipients(RecipientInterface ...$recipients): array
-    {
-        $result = [];
-
-        foreach ($recipients as $recipient) {
-            if (false === ($recipient instanceof SmsRecipient)) {
-                continue;
-            }
-
-            $result[] = $recipient;
-        }
-
-        return $result;
-    }
-
-    /**
-     * E-mail recipients
-     *
-     * @param RecipientInterface ...$recipients Recipients
-     *
-     * @return array
-     */
-    private function getEmailRecipients(RecipientInterface ...$recipients): array
-    {
-        $result = [];
-
-        foreach ($recipients as $recipient) {
-            if (false === ($recipient instanceof EmailRecipient)) {
-                continue;
-            }
-
-            $result[] = $recipient;
-        }
-
-        return $result;
     }
 
 }
