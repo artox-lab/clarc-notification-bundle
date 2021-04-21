@@ -15,14 +15,17 @@ namespace ArtoxLab\Bundle\ClarcNotificationBundle\Notification\Interfaces\Notifi
 use ArtoxLab\Bundle\ClarcNotificationBundle\Notification\Entities\Notification\NotificationInterface;
 use ArtoxLab\Bundle\ClarcNotificationBundle\Notification\Entities\Notifier\NotifierInterface;
 use ArtoxLab\Bundle\ClarcNotificationBundle\Notification\Entities\Recipient\EmailRecipientInterface;
+use ArtoxLab\Bundle\ClarcNotificationBundle\Notification\Entities\Recipient\HttpRecipientInterface;
 use ArtoxLab\Bundle\ClarcNotificationBundle\Notification\Entities\Recipient\RecipientInterface;
 use ArtoxLab\Bundle\ClarcNotificationBundle\Notification\Entities\Recipient\SmsRecipientInterface;
 use ArtoxLab\Bundle\ClarcNotificationBundle\Notification\Interfaces\Exceptions\NoneAvailableTransportForMessageException;
 use ArtoxLab\Bundle\ClarcNotificationBundle\Notification\Interfaces\Exceptions\PresenterNotFoundException;
 use ArtoxLab\Bundle\ClarcNotificationBundle\Notification\Interfaces\Exceptions\RecipientIsNotSpecifiedException;
 use ArtoxLab\Bundle\ClarcNotificationBundle\Notification\Interfaces\Message\EmailMessage;
+use ArtoxLab\Bundle\ClarcNotificationBundle\Notification\Interfaces\Message\HttpMessage;
 use ArtoxLab\Bundle\ClarcNotificationBundle\Notification\Interfaces\Message\SmsMessage;
 use ArtoxLab\Bundle\ClarcNotificationBundle\Notification\Interfaces\Presenter\EmailPresenterInterface;
+use ArtoxLab\Bundle\ClarcNotificationBundle\Notification\Interfaces\Presenter\HttpPresenterInterface;
 use ArtoxLab\Bundle\ClarcNotificationBundle\Notification\Interfaces\Presenter\PresenterProviderInterface;
 use ArtoxLab\Bundle\ClarcNotificationBundle\Notification\Interfaces\Presenter\SmsPresenterInterface;
 use ArtoxLab\Bundle\ClarcNotificationBundle\Notification\Interfaces\Transport\TransportProviderInterface;
@@ -84,6 +87,10 @@ class Notifier implements NotifierInterface
 
         if ($presenter instanceof EmailPresenterInterface) {
             $this->notifyViaEmail($notification, $presenter, ...$recipients);
+        }
+
+        if ($presenter instanceof HttpPresenterInterface) {
+            $this->notifyViaHttp($notification, $presenter, ...$recipients);
         }
     }
 
@@ -150,6 +157,41 @@ class Notifier implements NotifierInterface
 
             if (null === $transport) {
                 throw new NoneAvailableTransportForMessageException(EmailMessage::class);
+            }
+
+            $transport->send($message);
+        }
+    }
+
+    /**
+     * Send notification via http
+     *
+     * @param NotificationInterface  $notification  Notification
+     * @param HttpPresenterInterface $presenter     Presenter of notification
+     * @param RecipientInterface     ...$recipients Recipients
+     *
+     * @return void
+     */
+    private function notifyViaHttp(
+        NotificationInterface $notification,
+        HttpPresenterInterface $presenter,
+        ...$recipients
+    ): void {
+        foreach ($recipients as $recipient) {
+            if (false === ($recipient instanceof HttpRecipientInterface)) {
+                continue;
+            }
+
+            $message = new HttpMessage(
+                $presenter->getRequestMethod($notification),
+                $recipient->getUrl(),
+                $presenter->getRequestOptions($notification)
+            );
+
+            $transport = $this->transportProvider->getTransport($message);
+
+            if (null === $transport) {
+                throw new NoneAvailableTransportForMessageException(HttpMessage::class);
             }
 
             $transport->send($message);

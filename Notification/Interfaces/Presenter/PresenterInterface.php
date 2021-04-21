@@ -16,15 +16,6 @@ interface PresenterInterface
 {
 
     /**
-     * Message
-     *
-     * @param NotificationInterface $notification Notification
-     *
-     * @return string
-     */
-    public function getContent(NotificationInterface $notification): string;
-
-    /**
      * Supports
      *
      * @param NotificationInterface $notification Notification

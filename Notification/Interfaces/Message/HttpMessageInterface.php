@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Interface: notification message
+ * Interface: http message
  *
  * @author Dmitry Meliukh <d.meliukh@artox.com>
  */
@@ -10,21 +10,14 @@ declare(strict_types=1);
 
 namespace ArtoxLab\Bundle\ClarcNotificationBundle\Notification\Interfaces\Message;
 
-interface MessageInterface
+interface HttpMessageInterface extends MessageInterface
 {
 
     /**
-     * Recipient
+     * Request method
      *
      * @return string
      */
-    public function getRecipient(): string;
-
-    /**
-     * Message
-     *
-     * @return mixed
-     */
-    public function getContent();
+    public function getMethod(): string;
 
 }
